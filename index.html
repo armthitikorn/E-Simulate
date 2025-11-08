@@ -257,7 +257,7 @@ color: white;">
             harder: { S1: 5, S2: 10, S3: 5, S4: 5, S5: 3, label: "ยากขึ้น (Harder)" }
         };
 
-        // --- 2. Audio Files URL (ใช้ URL เดิมที่อ้างอิง) ---
+        // --- 2. Audio Files URL (นำ URL เสียงลูกค้ากลับมาทั้งหมด) ---
         // S1: เปิดตัว/โต้ตอบต้นสาย
         const allCustomerReplies = [
             "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-a3ca-9e9b87a5f2de.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q2_a68fb010-ec6c-47c2-95b2-d839553fe4e7.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q3_d974acce-1bc1-4473-a9f6-d49a256636ab.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q4_c3dd3875-fac4-4ad0-96d7-31adf9175c69.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q5_60ca36aa-3425-4824-987a-ff6b7fd7dbe1.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q7_490b0134-6446-4708-b86c-785d31306d07.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q8_ad281257-c3b9-44dd-8ca5-0f383d438003.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q9_36918038-0a42-4b6b-afc6-048a619f589d.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q10_68208219-7f94-48be-8446-d296d03711a3.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_75f89f58-d31d-4edb-a47d-901d0dfc92d4.webm"
@@ -376,7 +376,7 @@ color: white;">
         // --- 4. Recording Logic (ส่วนที่ถูกแก้ไขและทำความสะอาดอย่างเข้มงวด) ---
         
         function getSectionStatusElement(type) {
-            if (type === 1) return window.s1Status; // <<< แก้ไขตรงนี้
+            if (type === 1) return window.s1Status; 
             if (type === 2) return window.qStatus; 
             if (type === 3 || type === 4) return window.cStatus;
             if (type === 5) return window.hStatus; 
@@ -573,11 +573,11 @@ color: white;">
                     `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
                     () => { // onEndedCallback
                         if (turn < maxTurns) { 
-                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; // <<< อ้างอิงตัวแปรใหม่
+                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; 
                             window.recordBtn.disabled = false;
                         } else {
                             window.nextRoundBtn.disabled = false;
-                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`; // <<< อ้างอิงตัวแปรใหม่
+                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
                             window.recordBtn.disabled = true;
                         }
                     }
@@ -1013,7 +1013,7 @@ color: white;">
             window.customerAudio = document.getElementById('customerAudio');
             window.recordBtn = document.getElementById('recordBtn');
             window.nextRoundBtn = document.getElementById('nextRoundBtn');
-            window.s1Status = document.getElementById('status'); // <<< แก้ไข: เปลี่ยนชื่อเป็น s1Status
+            window.s1Status = document.getElementById('status'); 
 
             // S2
             window.qRound = document.getElementById('qRound');
@@ -1112,7 +1112,7 @@ color: white;">
             // 4. Initialize Test Flow
             prepareTurnFiles(); 
             window.recordBtn.disabled = false;
-            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`; // <<< อ้างอิงตัวแปรใหม่
+            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`;
         }
 
         document.addEventListener('DOMContentLoaded', initializeUserAndElements);
