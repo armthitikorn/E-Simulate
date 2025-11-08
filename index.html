@@ -172,6 +172,7 @@ color: white;">
 <div id="testSection" style="display: none;">
 <h2 id="section1Title">🗣️ ช่วงที่ 1: เปิดตัว/โต้ตอบต้นสาย (เทิร์นที่ <span id="turnSpan">1</span>/<span id="maxTurnSpan">5</span>)</h2>
 <audio id="customerAudio" src=""></audio>
+<button disabled="" id="playCustomerBtn">🔊 เล่นเสียงลูกค้า</button> 
 <button id="recordBtn">🎙️ เริ่มบันทึกเสียง (พนักงาน)</button>
 <button disabled="" id="nextRoundBtn">✅ จบบทที่ 1 (ไปช่วงที่ 2)</button>
 <p id="status">รอเริ่มบันทึกบทพูดเปิดตัว</p>
@@ -359,8 +360,18 @@ color: white;">
             audioElement.onloadeddata = () => { 
                 if (statusElement) statusElement.textContent = `🔊 ${playingMessage}`;
                 audioElement.play().catch(error => { 
-                    if (statusElement) statusElement.textContent = `❌ เล่นอัตโนมัติถูกบล็อก: ${error.message}.`; 
-                    setTimeout(onEndedCallback, 1000); 
+                    // ถ้าเล่นอัตโนมัติล้มเหลว (Autoplay Block)
+                    if (statusElement) statusElement.textContent = `❌ เล่นเสียงลูกค้าถูกบล็อกโดยเบราว์เซอร์: ${error.message}. โปรดลองคลิกที่ปุ่ม 'เล่นเสียงลูกค้า'`; 
+                    
+                    // ใน S1, ถ้าเล่นไม่ได้ ต้องเปิดปุ่ม PlayCustomerBtn
+                    if (audioElement === window.customerAudio) {
+                        window.playCustomerBtn.disabled = false;
+                        window.playCustomerBtn.textContent = `▶️ คลิกเพื่อเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})`;
+                        // ไม่ต้องเรียก onEndedCallback ทันที เพราะต้องรอ user กด
+                    } else {
+                        // สำหรับ Section อื่นที่ไม่ได้มีปุ่ม Play เฉพาะ
+                        setTimeout(onEndedCallback, 1000); 
+                    }
                 }); 
             };
             
@@ -465,7 +476,10 @@ color: white;">
                     buttonElement.disabled = false; 
                     
                     // Disable section end buttons while recording
-                    if (type === 1) window.nextRoundBtn.disabled = true; 
+                    if (type === 1) { 
+                        window.nextRoundBtn.disabled = true;
+                        window.playCustomerBtn.disabled = true; // NEW: Disable Play button while recording
+                    } 
                     if (type === 2) window.nextSection3Btn.disabled = true; 
                     if (type === 5) window.nextSection5Btn.disabled = true; 
                     if (type === 6) window.finalSaveBtn.disabled = true; 
@@ -497,7 +511,7 @@ color: white;">
             // Auto-advance logic after stopping recording
             if (type === 1) { 
                 if (turn < maxTurns) { 
-                    window.endTurn(); // Play next customer reply
+                    window.prepareNextCustomerTurn(); // เปลี่ยนเป็นเตรียมการเล่นแทนการเล่นอัตโนมัติ
                 } else { 
                     window.nextRoundBtn.disabled = false;
                     statusElement.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
@@ -544,7 +558,7 @@ color: white;">
             }
         }
         
-        // --- 5. Section 1 Functions --- 
+        // --- 5. Section 1 Functions (ปรับปรุง flow การเล่นเสียงลูกค้า) --- 
         let selectedRandomFiles = [];
         const fixedFirstObjection = "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-a3ca-9e9b87a5f2de.webm"; 
         const finalObjection = "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_75f89f58-d31d-4edb-a47d-901d0dfc92d4.webm"; 
@@ -560,30 +574,46 @@ color: white;">
             }
         }
 
-        window.endTurn = function() { 
+        // NEW: เตรียมการเล่นเสียงลูกค้า (หลังจาก agent บันทึกเสร็จ)
+        window.prepareNextCustomerTurn = function() {
             if (turn < maxTurns) { 
                 turn++;
                 window.turnSpan.textContent = turn;
                 const fileToPlay = selectedRandomFiles[turn - 1];
                 
-                playAudio(
-                    window.customerAudio, 
-                    fileToPlay, 
-                    `กำลังโหลดเสียงลูกค้า...`, 
-                    `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
-                    () => { // onEndedCallback
-                        if (turn < maxTurns) { 
-                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; 
-                            window.recordBtn.disabled = false;
-                        } else {
-                            window.nextRoundBtn.disabled = false;
-                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
-                            window.recordBtn.disabled = true;
-                        }
-                    }
-                );
+                // 1. ตั้งค่า Audio Source ล่วงหน้า
+                window.customerAudio.src = fileToPlay; 
+                window.customerAudio.load();
+                
+                // 2. อัปเดต UI และเปิดใช้งานปุ่ม PlayCustomerBtn
+                window.s1Status.textContent = `📢 เสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns}): โปรดกด 'เล่นเสียงลูกค้า'`; 
+                window.playCustomerBtn.textContent = `🔊 เล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})`;
+                window.playCustomerBtn.disabled = false;
             }
-        } 
+        }
+
+        // NEW: เล่นเสียงลูกค้าเมื่อผู้ใช้คลิก
+        window.playCustomerTurn = function() {
+             window.playCustomerBtn.disabled = true; // ปิดปุ่มทันทีเพื่อไม่ให้คลิกซ้ำ
+
+             playAudio(
+                window.customerAudio, 
+                window.customerAudio.src, // ใช้ src ที่ตั้งค่าไว้แล้ว
+                `กำลังโหลดเสียงลูกค้า...`, 
+                `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
+                () => { // onEndedCallback: เมื่อลูกค้าพูดจบ
+                    if (turn < maxTurns) { 
+                        window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; 
+                        window.recordBtn.disabled = false;
+                    } else {
+                        window.nextRoundBtn.disabled = false;
+                        window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
+                        window.recordBtn.disabled = true;
+                    }
+                    window.playCustomerBtn.disabled = true; // ปิดปุ่มหลังใช้งาน
+                }
+            );
+        }
         
         window.initSection2 = function() {
             window.nextRoundBtn.disabled = true;
@@ -1011,6 +1041,7 @@ color: white;">
             window.turnSpan = document.getElementById('turnSpan');
             window.maxTurnSpan = document.getElementById('maxTurnSpan');
             window.customerAudio = document.getElementById('customerAudio');
+            window.playCustomerBtn = document.getElementById('playCustomerBtn'); // NEW
             window.recordBtn = document.getElementById('recordBtn');
             window.nextRoundBtn = document.getElementById('nextRoundBtn');
             window.s1Status = document.getElementById('status'); 
@@ -1058,6 +1089,7 @@ color: white;">
 
             // S1
             window.recordBtn.addEventListener('click', () => window.toggleRecording(1));
+            window.playCustomerBtn.addEventListener('click', window.playCustomerTurn); // NEW
             window.nextRoundBtn.addEventListener('click', window.initSection2);
 
             // S2
