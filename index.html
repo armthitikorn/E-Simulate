@@ -252,9 +252,9 @@ color: white;">
         let maxA;
         // Difficulty Configurations 
         const difficultyConfig = {
-            easy: { S1: 1, S2: 1, S3: 1, S4: 5, S5: 7, label: "ง่าย (Easy)" },
-            hard: { S1: 5, S2: 8, S3: 5, S4: 5, S5: 7, label: "ยาก (Hard)" },
-            harder: { S1: 10, S2: 10, S3: 10, S4: 5, S5: 7, label: "ยากขึ้น (Harder)" }
+            easy: { S1: 3, S2: 5, S3: 3, S4: 5, S5: 2, label: "ง่าย (Easy)" },
+            hard: { S1: 5, S2: 8, S3: 5, S4: 5, S5: 3, label: "ยาก (Hard)" },
+            harder: { S1: 5, S2: 10, S3: 5, S4: 5, S5: 3, label: "ยากขึ้น (Harder)" }
         };
 
         // --- 2. Audio Files URL (นำ URL เสียงลูกค้ากลับมาทั้งหมด) ---
@@ -337,18 +337,16 @@ color: white;">
             return array;
         }
 
-        // *** Audio Player Utility Function (NEW: เคลียร์ Handler เสมอ) ***
+        // *** Audio Player Utility Function (จัดการ Autoplay Block) ***
         function playAudio(audioElement, url, loadingMessage, playingMessage, onEndedCallback) {
             audioElement.src = url; 
             audioElement.load();
-            audioElement.pause(); // Reset any ongoing playback
+            audioElement.pause();
             
-            // Clear previous handlers to prevent overlapping logic
             audioElement.onloadeddata = null;
             audioElement.onended = null;
             
             // Set loading state
-            // *** FIX: เปลี่ยน window.status เป็น window.s1Status เพื่อเลี่ยง TypeError ***
             const statusElement = (audioElement === window.customerAudio) ? window.s1Status : 
                                   (audioElement === window.questionAudio) ? window.qStatus : 
                                   (audioElement === window.objectionAudio) ? window.cStatus : 
@@ -360,14 +358,34 @@ color: white;">
             audioElement.onloadeddata = () => { 
                 if (statusElement) statusElement.textContent = `🔊 ${playingMessage}`;
                 audioElement.play().catch(error => { 
-                    // ** WARNING ** การเล่นอัตโนมัติอาจถูกบล็อกโดยเบราว์เซอร์
-                    if (statusElement) statusElement.textContent = `❌ เล่นอัตโนมัติถูกบล็อก: ${error.message}. กรุณาลองคลิกที่หน้าจอหรือรีเฟรช`; 
+                    
+                    // ** FIX: จัดการ Autoplay Block สำหรับ S2, S3, S5 **
+                    if (statusElement) statusElement.textContent = `❌ เล่นอัตโนมัติถูกบล็อก: ${error.message}. กรุณากดปุ่มเริ่ม/เล่นซ้ำ`; 
+                    
+                    let reEnableButton = null;
+
+                    if (audioElement === window.questionAudio) reEnableButton = window.startQBtn; // S2
+                    else if (audioElement === window.agreementAudio) reEnableButton = window.startABtn; // S5
+                    else if (audioElement === window.objectionAudio) reEnableButton = window.replyBtn; // S3 (Next recording button)
+
+                    if (reEnableButton) {
+                        reEnableButton.disabled = false;
+                        // Special text for S3 skip
+                        if (audioElement === window.objectionAudio) {
+                            reEnableButton.textContent = `🎙️ 2. คลิกเพื่อเริ่มบันทึกตอบข้อโต้แย้ง (เสียงลูกค้าถูกข้าม)`;
+                            window.closeBtn.style.display = 'block'; // Ensure close button reappears
+                        } else {
+                            reEnableButton.textContent = `▶️ คลิกเพื่อเล่นซ้ำ`; 
+                        }
+                        return; // Stop the flow
+                    }
+
+                    // S1 และ S4 Autoplay fallback (Allow flow to continue after a short pause)
                     setTimeout(onEndedCallback, 1000); 
                 }); 
             };
             
             audioElement.onended = () => {
-                // Clear handlers after finishing
                 audioElement.onloadeddata = null;
                 audioElement.onended = null;
                 onEndedCallback();
@@ -375,10 +393,10 @@ color: white;">
         }
 
 
-        // --- 4. Recording Logic (ส่วนที่ถูกแก้ไขและทำความสะอาดอย่างเข้มงวด) ---
+        // --- 4. Recording Logic ---
         
         function getSectionStatusElement(type) {
-            if (type === 1) return window.s1Status; // FIX: ใช้ s1Status
+            if (type === 1) return window.s1Status; 
             if (type === 2) return window.qStatus; 
             if (type === 3 || type === 4) return window.cStatus;
             if (type === 5) return window.hStatus; 
@@ -409,7 +427,6 @@ color: white;">
             if (!mediaRecorder) { 
                 // --- START RECORDING ---
                 try { 
-                    // ขอเข้าถึงไมโครโฟน
                     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
                     mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' }); 
                     let localChunks = []; 
@@ -420,10 +437,9 @@ color: white;">
                         }
                     };
 
-                    // *** CRITICAL FIX: onstop Handler และ Cleaner Logic ***
                     mediaRecorder.onstop = () => {
                         
-                        // 1. ประมวลผลไฟล์เสียงที่บันทึกได้
+                        // 1. Process recorded data
                         if (localChunks.length > 0) {
                             const audioBlob = new Blob(localChunks, { type: 'audio/webm' });
                             masterAudioChunks.push(audioBlob);
@@ -432,16 +448,16 @@ color: white;">
                             statusElement.textContent = `⚠️ บันทึกเสร็จสิ้น แต่ไม่มีเสียงถูกบันทึก!`;
                         }
 
-                        // 2. หยุดและเคลียร์ Stream ไมโครโฟนทันที (รับประกันการปลดล็อก)
+                        // 2. Stop and clean up stream
                         if (mediaStream) {
                             mediaStream.getTracks().forEach(track => track.stop()); 
                         }
                         
-                        // 3. ทำความสะอาดสถานะ Recorders/Streams และ UI
+                        // 3. Clean up recorder state
                         mediaRecorder = null; 
                         mediaStream = null; 
                         
-                        // Restore button text to original and re-enable it 
+                        // Restore button text
                         if (type === 1) buttonElement.textContent = '🎙️ เริ่มบันทึกเสียง (พนักงาน)';
                         else if (type === 2) buttonElement.textContent = '🎙️ เริ่มบันทึกคำตอบ';
                         else if (type === 3) buttonElement.textContent = '🎙️ 1. บันทึกสคริปต์ปิดการขาย';
@@ -449,7 +465,7 @@ color: white;">
                         else if (type === 5) buttonElement.textContent = '🎙️ บันทึกคำถามสุขภาพ';
                         else if (type === 6) buttonElement.textContent = '🎙️ บันทึกการตอบกลับ';
 
-                        // 4. Logic การดำเนินการต่ออัตโนมัติ
+                        // 4. Continue flow
                         window.handleRecordingStop(type, statusElement);
                     };
                     
@@ -473,7 +489,6 @@ color: white;">
                     if (type === 6) window.finalSaveBtn.disabled = true; 
 
                 } catch (err) { 
-                    // กรณีเข้าถึงไมโครโฟนล้มเหลว
                     if (mediaStream) mediaStream.getTracks().forEach(track => track.stop()); 
                     mediaRecorder = null;
                     mediaStream = null;
@@ -486,21 +501,19 @@ color: white;">
                 // --- STOP RECORDING ---
                 buttonElement.textContent = "⏳ กำลังหยุดบันทึก...";
                 buttonElement.disabled = true;
-                // mediaRecorder.onstop จะทำงานโดยอัตโนมัติ
                 if (mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop(); 
                 }
             }
         } 
         
-        // *** NEW: Centralized Stop Handler Logic ***
+        // *** Centralized Stop Handler Logic (S1 Autoplay) ***
         window.handleRecordingStop = function(type, statusElement) {
             
             // Auto-advance logic after stopping recording
             if (type === 1) { 
                 if (turn < maxTurns) { 
-                    // *** S1 AUTOPLAY LOGIC (ตามคำขอ) ***
-                    window.endTurn(); 
+                    window.endTurn(); // S1 Autoplay Logic
                 } else { 
                     window.nextRoundBtn.disabled = false;
                     statusElement.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
@@ -518,7 +531,7 @@ color: white;">
                     window.answerBtn.disabled = true;
                 }
             } else if (type === 3) { 
-                // บันทึกสคริปต์ปิดการขายเสร็จแล้ว -> เล่นข้อโต้แย้ง
+                // บันทึกสคริปต์ปิดการขายเสร็จแล้ว -> เล่นข้อโต้แย้ง (Autoplay)
                 window.replyBtn.disabled = false;
                 window.closeBtn.disabled = true;
                 window.playRandomObjection();
@@ -526,7 +539,7 @@ color: white;">
                 // บันทึกเสียงตอบข้อโต้แย้งเสร็จแล้ว -> เริ่มรอบปิดการขายใหม่
                 window.closeBtn.style.display = 'block'; 
                 window.replyBtn.disabled = true;
-                cRound++; // นับรอบเมื่อตอบข้อโต้แย้งเสร็จ (1 รอบ = close + reply)
+                cRound++; 
 
                 if (cRound >= maxC) {
                     window.cStatus.textContent = "🎉 เสร็จสิ้นช่วงที่ 3! กรุณากด 'จบบทที่ 3' เพื่อไปช่วงที่ 4";
@@ -538,7 +551,7 @@ color: white;">
                 }
 
             } else if (type === 5) { 
-                // บันทึกคำถามสุขภาพ/ซักประวัติเสร็จแล้ว -> เล่นคำตอบลูกค้า
+                // บันทึกคำถามสุขภาพ/ซักประวัติเสร็จแล้ว -> เล่นคำตอบลูกค้า (Autoplay)
                 window.playDynamicHealthQuestion(); 
                 window.answerHBtn.disabled = true;
             } else if (type === 6) { 
@@ -558,7 +571,7 @@ color: white;">
             const randomCount = Math.min(maxTurns - 2, allCustomerReplies.length);
             const threeRandom = allCustomerReplies.slice(0, randomCount);
             selectedRandomFiles.push(...threeRandom);
-            if (maxTurns > 1) { // Ensure final objection is added only if more than 1 turn
+            if (maxTurns > 1) { 
                 selectedRandomFiles.push(finalObjection); 
             }
         }
@@ -576,11 +589,11 @@ color: white;">
                     `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
                     () => { // onEndedCallback
                         if (turn < maxTurns) { 
-                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; // FIX: ใช้ s1Status
+                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; 
                             window.recordBtn.disabled = false;
                         } else {
                             window.nextRoundBtn.disabled = false;
-                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`; // FIX: ใช้ s1Status
+                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
                             window.recordBtn.disabled = true;
                         }
                     }
@@ -627,7 +640,7 @@ color: white;">
             
             questionPool.splice(questionPool.indexOf(selectedFile), 1);
             
-            window.startQBtn.disabled = true;
+            window.startQBtn.disabled = true; 
             window.answerBtn.disabled = true;
             
             playAudio(
@@ -635,9 +648,9 @@ color: white;">
                 selectedFile, 
                 `กำลังโหลดคำถามลูกค้า...`, 
                 `กำลังเล่นคำถามที่ ${qRound}/${maxQ}...`, 
-                () => { // onEndedCallback
+                () => { // onEndedCallback: runs after successful playback
                     window.qStatus.textContent = "🎤 พร้อมบันทึกคำตอบ";
-                    window.answerBtn.disabled = false;
+                    window.answerBtn.disabled = false; 
                     
                     if (qRound === 1) window.startQBtn.style.display = 'none'; 
 
@@ -674,7 +687,6 @@ color: white;">
                 return;
             }
             
-            // Hide Close button while objection plays
             window.closeBtn.style.display = 'none'; 
 
             const currentPool = objectionPool.slice(0, maxC - cRound);
@@ -1016,7 +1028,7 @@ color: white;">
             window.customerAudio = document.getElementById('customerAudio');
             window.recordBtn = document.getElementById('recordBtn');
             window.nextRoundBtn = document.getElementById('nextRoundBtn');
-            window.s1Status = document.getElementById('status'); // *** FIX: เปลี่ยนชื่อจาก 'status' เพื่อแก้ TypeError ***
+            window.s1Status = document.getElementById('status'); 
 
             // S2
             window.qRound = document.getElementById('qRound');
@@ -1115,7 +1127,7 @@ color: white;">
             // 4. Initialize Test Flow
             prepareTurnFiles(); 
             window.recordBtn.disabled = false;
-            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`; // FIX: ใช้ s1Status
+            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`;
         }
 
         document.addEventListener('DOMContentLoaded', initializeUserAndElements);
