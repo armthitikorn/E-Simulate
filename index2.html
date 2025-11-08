@@ -80,10 +80,6 @@
             background-color: #f0f0f0;
             border-radius: 4px;
         }
-        /* ซ่อนส่วนที่ยังไม่ถึง */
-        #section3, #section4, #section5 {
-            /* โค้ดเดิมถูกตัดออก */
-        }
         
         /* CSS สำหรับ Loading Overlay และ Certificate (NEW) */
         #loadingOverlay {
@@ -246,10 +242,10 @@
                 5: "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_ff573737-1694-49ce-bf5a-d2853dd0b2ae.webm" 
             }
         },
-        // ... (ข้อมูลโรคอื่นๆ) ...
+        // NOTE: ข้อมูลโรคอื่นๆ ถูกละไว้เพื่อความกระชับ แต่โค้ดจะใช้ randomIndex ในการเลือกจาก pool 
     ];
 
-    // --- S4 Logic Functions (ไม่เปลี่ยนแปลง) ---
+    // --- S4 Logic Functions (ตรรกะ playDynamicHealthQuestion ถูกกำหนด) ---
     function initializeState(params) {
         currentHIndex = 0; isFollowUpMode = false; followUpStep = 0; selectedDisease = null;
         aRound = 0; maxH = params.maxH; maxA = params.maxA;
@@ -291,14 +287,17 @@
             answerHBtn.disabled = false;
         }, 700); 
     }
+    
+    // --- ฟังก์ชัน playDynamicHealthQuestion ถูกแก้ไขตามเงื่อนไข (1, 2, 3, 5 = No; 4 = Yes/Random) ---
     function playDynamicHealthQuestion() {
         const healthAudio = document.getElementById("healthAudio");
         const hStatusElement = document.getElementById("hStatus");
         const answerHBtn = document.getElementById("answerHBtn");
         const nextSection5Btn = document.getElementById("nextSection5Btn");
         answerHBtn.disabled = true;
+
         if (isFollowUpMode) {
-            // โหมดสอบสวนโรค: พนักงานบันทึกเสร็จ -> เล่นคำตอบลูกค้า
+            // โหมดสอบสวนโรค (ตรรกะเดิม)
             const customerAnswerUrl = selectedDisease.followUp[followUpStep];
             healthAudio.src = customerAnswerUrl; healthAudio.load();
             hStatusElement.textContent = `⏳ กำลังโหลดคำตอบลูกค้าสำหรับขั้นตอน ${F_QUESTION_NAMES[followUpStep]} (โรค: ${selectedDisease.name})...`;
@@ -319,20 +318,37 @@
                 }
             };
         } else {
-            // โหมดคำถามมาตรฐาน: พนักงานบันทึกเสร็จ -> เล่นคำตอบลูกค้า
+            // โหมดคำถามมาตรฐาน
             if (currentHIndex >= maxH) {
                 nextSection5Btn.disabled = false; hStatusElement.textContent = `🎉 คำถามสุขภาพครบ ${maxH} ข้อแล้ว! กรุณากด 'จบบทที่ 4' เพื่อไปช่วงที่ 5`;
                 return;
             }
-            const isYes = Math.random() < CHANCE_OF_YES;
+            
+            let isYes;
+            
+            if (currentHIndex === 3) {
+                // คำถามที่ 4 (Index 3): สุ่มมีปัญหา -> YES (เข้าโหมดสอบสวนโรค)
+                isYes = true;
+            } else if (currentHIndex === 0 || currentHIndex === 1 || currentHIndex === 2 || currentHIndex === 4) {
+                // คำถามที่ 1, 2, 3, 5 (Index 0, 1, 2, 4): ตอบว่าไม่เคย -> NO
+                isYes = false;
+            } else {
+                // Fallback (เผื่อ maxH เปลี่ยน)
+                isYes = Math.random() < CHANCE_OF_YES; 
+            }
+
             if (isYes) {
+                // (Yes logic)
                 const randomIndex = Math.floor(Math.random() * DISEASE_POOL.length);
-                selectedDisease = DISEASE_POOL[randomIndex]; isFollowUpMode = true; followUpStep = 1; 
+                selectedDisease = DISEASE_POOL[randomIndex]; 
+                isFollowUpMode = true; 
+                followUpStep = 1; 
                 healthAudio.src = selectedDisease.yesTriggerUrl; healthAudio.load();
                 hStatusElement.textContent = `⏳ กำลังโหลดคำตอบลูกค้า: "ใช่" (โรค: ${selectedDisease.name})...`;
                 healthAudio.onloadeddata = () => { healthAudio.play(); hStatusElement.textContent = `🔊 กำลังเล่นคำตอบลูกค้า: "ใช่" (โรค: ${selectedDisease.name})...`; };
                 healthAudio.onended = () => { startFollowUpQuestion(); };
             } else {
+                // (No logic)
                 healthAudio.src = NO_ANSWER_URL; healthAudio.load();
                 hStatusElement.textContent = `⏳ กำลังโหลดคำตอบลูกค้า: "ไม่เคยค่ะ/ครับ"...`;
                 healthAudio.onloadeddata = () => { healthAudio.play(); hStatusElement.textContent = `🔊 กำลังเล่นคำตอบลูกค้า: "ไม่เคยค่ะ/ครับ"...`; };
@@ -351,7 +367,7 @@
     }
 
 
-    // --- SECTION 5 LOGIC ---
+    // --- SECTION 5 LOGIC (ไม่เปลี่ยนแปลง) ---
     function initSection5(DOM) {
         DOM.section4Div.style.display = 'none';
         DOM.section5Div.style.display = 'block';
@@ -366,7 +382,7 @@
         
         aRound = 0; 
         
-        document.getElementById("aRound").textContent = aRound; // แสดง 0/7 ตอนเริ่ม
+        document.getElementById("aRound").textContent = aRound; 
         DOM.aStatusElement.textContent = `✅ ช่วงที่ 4 เสร็จสิ้น! กด 'เริ่มขั้นตอนการลงทะเบียน' เพื่อเริ่มขั้นตอนที่ 1/${maxA} (7 ขั้นตอน)`; 
         document.getElementById("maxASpan").textContent = maxA;
         alert("จบบทที่ 4 แล้ว! เริ่มช่วงที่ 5: ลงทะเบียนลูกค้า (7 ขั้นตอน)");
@@ -429,13 +445,8 @@
     }
 
 
-    // ====================================================================
     // --- MASTER RECORDING & UPLOAD LOGIC (FIXED) ---
-    // ====================================================================
 
-    /**
-     * 7. ฟังก์ชันหลักสำหรับเริ่มบันทึกเสียง Master Recording
-     */
     async function startMasterRecording() {
         if (mediaRecorder && mediaRecorder.state === "recording") return;
         
@@ -463,9 +474,6 @@
         }
     }
 
-    /**
-     * 8. ฟังก์ชันหลักสำหรับหยุดบันทึกและอัปโหลด (ผูกกับ finalSaveBtn)
-     */
     function stopAndSaveMasterRecording() {
         if (!mediaRecorder || mediaRecorder.state !== "recording") {
             alert("Master Recording ไม่ได้ทำงาน! กรุณาตรวจสอบการอนุญาตไมโครโฟน.");
@@ -476,9 +484,8 @@
         finalSaveBtn.disabled = true;
         finalSaveBtn.textContent = "⏳ กำลังรวมและอัปโหลดไฟล์...";
         
-        mediaRecorder.stop(); // สั่งหยุด Master Recording เพื่อให้ onstop รวบรวม Chunks
+        mediaRecorder.stop(); 
 
-        // รอให้ Master Audio Chunks ถูกรวบรวมเสร็จ (mediaRecorder.onstop จะทำงาน)
         setTimeout(() => {
             if (masterAudioChunks.length === 0) {
                 alert("ไม่มีไฟล์เสียงบันทึกไว้! ตรวจสอบไมโครโฟน");
@@ -500,9 +507,6 @@
         }, 500); 
     }
     
-    /**
-     * 9. ฟังก์ชันอัปโหลดไปยัง Supabase
-     */
     async function uploadFinalRecording(audioBlob) {
         const loadingOverlay = document.getElementById("loadingOverlay");
         const loadingText = document.getElementById("loadingText");
@@ -510,7 +514,6 @@
         loadingOverlay.style.display = "flex";
         loadingText.textContent = `กำลังอัปโหลดไฟล์ขนาด ${(audioBlob.size / (1024 * 1024)).toFixed(2)} MB...`;
 
-        // Prompt for user name before upload if not set
         if (userName === "ไม่ระบุชื่อ") {
             const nameInput = prompt("กรุณากรอกชื่อ-นามสกุล/รหัสพนักงาน:");
             userName = nameInput ? nameInput : `Anon_${currentUserId.substring(0, 8)}`;
@@ -518,7 +521,6 @@
 
         try {
             const fileName = `${currentUserId}/final/full_session_${uuidv4()}.webm`;
-            // อัปโหลดไฟล์
             const { error: uploadError } = await window.supabase.storage
                 .from('responses') 
                 .upload(fileName, audioBlob, { upsert: false });
@@ -527,7 +529,6 @@
             const { data: { publicUrl } } = window.supabase.storage.from('responses').getPublicUrl(fileName);
             loadingText.textContent = `กำลังบันทึกข้อมูลลงฐานข้อมูล...`;
             
-            // บันทึกข้อมูลลงตาราง submissions
             const { error: insertError } 
                 = await window.supabase
                 .from('submissions') 
@@ -553,9 +554,6 @@
         }
     }
 
-    /**
-     * 10. แสดงใบประกาศนียบัตร
-     */
     function showCertificate() {
         const nameInput = prompt("กรุณากรอกชื่อ-นามสกุล (สำหรับใบประกาศ):", userName);
         const finalName = nameInput ? nameInput : userName;
@@ -566,11 +564,8 @@
         document.getElementById("certificate").style.display = "block";
     }
 
-    // ====================================================================
     // --- Main Application Setup & Simulation Functions (FIXED) ---
-    // ====================================================================
 
-    // DOM References (UPDATED)
     const DOM = {
         section3Div: document.getElementById('section3Div'), section4Div: document.getElementById('section4Div'), section5Div: document.getElementById('section5Div'),
         hQName: document.getElementById('hQName'), hStatusElement: document.getElementById('hStatus'), answerHBtn: document.getElementById('answerHBtn'), stopHBtn: document.getElementById('stopHBtn'), healthAudio: document.getElementById('healthAudio'), nextSection5Btn: document.getElementById('nextSection5Btn'),
@@ -580,15 +575,12 @@
 
     let isRecording = false; 
 
-    // **FIXED**: Start Master Recording on the very first user interaction
     function startRecording(sectionId) {
         if (!mediaRecorder) {
-             // Master Recording จะถูกเรียกเมื่อกดปุ่มบันทึกครั้งแรก
              startMasterRecording(); 
-             DOM.answerHBtn.disabled = true; // ป้องกันการกดซ้ำขณะรอเข้าถึงไมค์
+             DOM.answerHBtn.disabled = true; 
         }
         
-        // Logic เพื่อควบคุม UI การโต้ตอบ
         if (isRecording) return;
         isRecording = true;
         
@@ -605,7 +597,6 @@
         }
     }
 
-    // **FIXED**: Stop recording and call onRecordingStopped
     function stopRecording(sectionId) {
         if (!isRecording) return;
         isRecording = false;
@@ -646,7 +637,7 @@
         DOM.answerABtn.addEventListener('click', (e) => startRecording(e.target.dataset.section));
         DOM.stopABtn.addEventListener('click', (e) => stopRecording('section5'));
 
-        // FINAL STEP (NEW)
+        // FINAL STEP 
         DOM.finalSaveBtn.addEventListener('click', stopAndSaveMasterRecording);
     }
 
