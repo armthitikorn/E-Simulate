@@ -172,7 +172,6 @@ color: white;">
 <div id="testSection" style="display: none;">
 <h2 id="section1Title">🗣️ ช่วงที่ 1: เปิดตัว/โต้ตอบต้นสาย (เทิร์นที่ <span id="turnSpan">1</span>/<span id="maxTurnSpan">5</span>)</h2>
 <audio id="customerAudio" src=""></audio>
-<button disabled="" id="playCustomerBtn">🔊 เล่นเสียงลูกค้า</button> 
 <button id="recordBtn">🎙️ เริ่มบันทึกเสียง (พนักงาน)</button>
 <button disabled="" id="nextRoundBtn">✅ จบบทที่ 1 (ไปช่วงที่ 2)</button>
 <p id="status">รอเริ่มบันทึกบทพูดเปิดตัว</p>
@@ -261,7 +260,7 @@ color: white;">
         // --- 2. Audio Files URL (นำ URL เสียงลูกค้ากลับมาทั้งหมด) ---
         // S1: เปิดตัว/โต้ตอบต้นสาย
         const allCustomerReplies = [
-            "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-a3ca-9e9b87a5f2de.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q2_a68fb010-ec6c-47c2-95b2-d839553fe4e7.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q3_d974acce-1bc1-4473-a9f6-d49a256636ab.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q4_c3dd3875-fac4-4ad0-96d7-31adf9175c69.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q5_60ca36aa-3425-4824-987a-ff6b7fd7dbe1.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q7_490b0134-6446-4708-b86c-785d31306d07.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q8_ad281257-c3b9-44dd-8ca5-0f383d438003.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q9_36918038-0a42-4b6b-afc6-048a619f589d.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q10_68208219-7f94-48be-8446-d296d03711a3.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_75f89f58-d31d-4edb-a47d-901d0dfc92d4.webm"
+            "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-806f-ae77f5cde2de.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q2_a68fb010-ec6c-47c2-95b2-d839553fe4e7.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q3_d974acce-1bc1-4473-a9f6-d49a256636ab.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q4_c3dd3875-fac4-4ad0-96d7-31adf9175c69.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q5_60ca36aa-3425-4824-987a-ff6b7fd7dbe1.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q7_490b0134-6446-4708-b86c-785d31306d07.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q8_ad281257-c3b9-44dd-8ca5-0f383d438003.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q9_36918038-0a42-4b6b-afc6-048a619f589d.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q10_68208219-7f94-48be-8446-d296d03711a3.webm", "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_75f89f58-d31d-4edb-a47d-901d0dfc92d4.webm"
         ];
         // S2: ตอบคำถามลูกค้า
         const questionFiles = [
@@ -349,6 +348,7 @@ color: white;">
             audioElement.onended = null;
             
             // Set loading state
+            // *** FIX: เปลี่ยน window.status เป็น window.s1Status เพื่อเลี่ยง TypeError ***
             const statusElement = (audioElement === window.customerAudio) ? window.s1Status : 
                                   (audioElement === window.questionAudio) ? window.qStatus : 
                                   (audioElement === window.objectionAudio) ? window.cStatus : 
@@ -360,18 +360,9 @@ color: white;">
             audioElement.onloadeddata = () => { 
                 if (statusElement) statusElement.textContent = `🔊 ${playingMessage}`;
                 audioElement.play().catch(error => { 
-                    // ถ้าเล่นอัตโนมัติล้มเหลว (Autoplay Block)
-                    if (statusElement) statusElement.textContent = `❌ เล่นเสียงลูกค้าถูกบล็อกโดยเบราว์เซอร์: ${error.message}. โปรดลองคลิกที่ปุ่ม 'เล่นเสียงลูกค้า'`; 
-                    
-                    // ใน S1, ถ้าเล่นไม่ได้ ต้องเปิดปุ่ม PlayCustomerBtn
-                    if (audioElement === window.customerAudio) {
-                        window.playCustomerBtn.disabled = false;
-                        window.playCustomerBtn.textContent = `▶️ คลิกเพื่อเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})`;
-                        // ไม่ต้องเรียก onEndedCallback ทันที เพราะต้องรอ user กด
-                    } else {
-                        // สำหรับ Section อื่นที่ไม่ได้มีปุ่ม Play เฉพาะ
-                        setTimeout(onEndedCallback, 1000); 
-                    }
+                    // ** WARNING ** การเล่นอัตโนมัติอาจถูกบล็อกโดยเบราว์เซอร์
+                    if (statusElement) statusElement.textContent = `❌ เล่นอัตโนมัติถูกบล็อก: ${error.message}. กรุณาลองคลิกที่หน้าจอหรือรีเฟรช`; 
+                    setTimeout(onEndedCallback, 1000); 
                 }); 
             };
             
@@ -387,7 +378,7 @@ color: white;">
         // --- 4. Recording Logic (ส่วนที่ถูกแก้ไขและทำความสะอาดอย่างเข้มงวด) ---
         
         function getSectionStatusElement(type) {
-            if (type === 1) return window.s1Status; 
+            if (type === 1) return window.s1Status; // FIX: ใช้ s1Status
             if (type === 2) return window.qStatus; 
             if (type === 3 || type === 4) return window.cStatus;
             if (type === 5) return window.hStatus; 
@@ -450,7 +441,7 @@ color: white;">
                         mediaRecorder = null; 
                         mediaStream = null; 
                         
-                        // Restore button text to original and re-enable it (handleRecordingStop handles the next state)
+                        // Restore button text to original and re-enable it 
                         if (type === 1) buttonElement.textContent = '🎙️ เริ่มบันทึกเสียง (พนักงาน)';
                         else if (type === 2) buttonElement.textContent = '🎙️ เริ่มบันทึกคำตอบ';
                         else if (type === 3) buttonElement.textContent = '🎙️ 1. บันทึกสคริปต์ปิดการขาย';
@@ -476,10 +467,7 @@ color: white;">
                     buttonElement.disabled = false; 
                     
                     // Disable section end buttons while recording
-                    if (type === 1) { 
-                        window.nextRoundBtn.disabled = true;
-                        window.playCustomerBtn.disabled = true; // NEW: Disable Play button while recording
-                    } 
+                    if (type === 1) window.nextRoundBtn.disabled = true; 
                     if (type === 2) window.nextSection3Btn.disabled = true; 
                     if (type === 5) window.nextSection5Btn.disabled = true; 
                     if (type === 6) window.finalSaveBtn.disabled = true; 
@@ -511,7 +499,8 @@ color: white;">
             // Auto-advance logic after stopping recording
             if (type === 1) { 
                 if (turn < maxTurns) { 
-                    window.prepareNextCustomerTurn(); // เปลี่ยนเป็นเตรียมการเล่นแทนการเล่นอัตโนมัติ
+                    // *** S1 AUTOPLAY LOGIC (ตามคำขอ) ***
+                    window.endTurn(); 
                 } else { 
                     window.nextRoundBtn.disabled = false;
                     statusElement.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
@@ -558,9 +547,9 @@ color: white;">
             }
         }
         
-        // --- 5. Section 1 Functions (ปรับปรุง flow การเล่นเสียงลูกค้า) --- 
+        // --- 5. Section 1 Functions --- 
         let selectedRandomFiles = [];
-        const fixedFirstObjection = "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-a3ca-9e9b87a5f2de.webm"; 
+        const fixedFirstObjection = "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q1_fe75e00d-70f8-429a-806f-ae77f5cde2de.webm"; 
         const finalObjection = "https://wzwyotzzxycqfwercakh.supabase.co/storage/v1/object/public/responses/4e1a6a7a-3666-4a39-a3ca-9e9b87a5f2de/part1/q6_75f89f58-d31d-4edb-a47d-901d0dfc92d4.webm"; 
 
         function prepareTurnFiles() { 
@@ -574,46 +563,30 @@ color: white;">
             }
         }
 
-        // NEW: เตรียมการเล่นเสียงลูกค้า (หลังจาก agent บันทึกเสร็จ)
-        window.prepareNextCustomerTurn = function() {
+        window.endTurn = function() { 
             if (turn < maxTurns) { 
                 turn++;
                 window.turnSpan.textContent = turn;
                 const fileToPlay = selectedRandomFiles[turn - 1];
                 
-                // 1. ตั้งค่า Audio Source ล่วงหน้า
-                window.customerAudio.src = fileToPlay; 
-                window.customerAudio.load();
-                
-                // 2. อัปเดต UI และเปิดใช้งานปุ่ม PlayCustomerBtn
-                window.s1Status.textContent = `📢 เสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns}): โปรดกด 'เล่นเสียงลูกค้า'`; 
-                window.playCustomerBtn.textContent = `🔊 เล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})`;
-                window.playCustomerBtn.disabled = false;
-            }
-        }
-
-        // NEW: เล่นเสียงลูกค้าเมื่อผู้ใช้คลิก
-        window.playCustomerTurn = function() {
-             window.playCustomerBtn.disabled = true; // ปิดปุ่มทันทีเพื่อไม่ให้คลิกซ้ำ
-
-             playAudio(
-                window.customerAudio, 
-                window.customerAudio.src, // ใช้ src ที่ตั้งค่าไว้แล้ว
-                `กำลังโหลดเสียงลูกค้า...`, 
-                `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
-                () => { // onEndedCallback: เมื่อลูกค้าพูดจบ
-                    if (turn < maxTurns) { 
-                        window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; 
-                        window.recordBtn.disabled = false;
-                    } else {
-                        window.nextRoundBtn.disabled = false;
-                        window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`;
-                        window.recordBtn.disabled = true;
+                playAudio(
+                    window.customerAudio, 
+                    fileToPlay, 
+                    `กำลังโหลดเสียงลูกค้า...`, 
+                    `กำลังเล่นเสียงลูกค้า (เทิร์นที่ ${turn}/${maxTurns})...`, 
+                    () => { // onEndedCallback
+                        if (turn < maxTurns) { 
+                            window.s1Status.textContent = `🎤 พร้อมบันทึกเสียงโต้ตอบของพนักงาน (เทิร์นที่ ${turn + 1}/${maxTurns})`; // FIX: ใช้ s1Status
+                            window.recordBtn.disabled = false;
+                        } else {
+                            window.nextRoundBtn.disabled = false;
+                            window.s1Status.textContent = `🎉 จบช่วงที่ 1! กด 'จบบทที่ 1'`; // FIX: ใช้ s1Status
+                            window.recordBtn.disabled = true;
+                        }
                     }
-                    window.playCustomerBtn.disabled = true; // ปิดปุ่มหลังใช้งาน
-                }
-            );
-        }
+                );
+            }
+        } 
         
         window.initSection2 = function() {
             window.nextRoundBtn.disabled = true;
@@ -1041,10 +1014,9 @@ color: white;">
             window.turnSpan = document.getElementById('turnSpan');
             window.maxTurnSpan = document.getElementById('maxTurnSpan');
             window.customerAudio = document.getElementById('customerAudio');
-            window.playCustomerBtn = document.getElementById('playCustomerBtn'); // NEW
             window.recordBtn = document.getElementById('recordBtn');
             window.nextRoundBtn = document.getElementById('nextRoundBtn');
-            window.s1Status = document.getElementById('status'); 
+            window.s1Status = document.getElementById('status'); // *** FIX: เปลี่ยนชื่อจาก 'status' เพื่อแก้ TypeError ***
 
             // S2
             window.qRound = document.getElementById('qRound');
@@ -1087,26 +1059,25 @@ color: white;">
         function setupEventListeners() {
             window.startTestBtn.addEventListener('click', window.startTest);
 
-            // S1
+            // S1 (Toggle Logic)
             window.recordBtn.addEventListener('click', () => window.toggleRecording(1));
-            window.playCustomerBtn.addEventListener('click', window.playCustomerTurn); // NEW
             window.nextRoundBtn.addEventListener('click', window.initSection2);
 
-            // S2
+            // S2 (Toggle Logic)
             window.startQBtn.addEventListener('click', window.playRandomQuestion);
             window.answerBtn.addEventListener('click', () => window.toggleRecording(2));
             window.nextSection3Btn.addEventListener('click', window.initSection3);
 
-            // S3
+            // S3 (Toggle Logic)
             window.closeBtn.addEventListener('click', () => window.toggleRecording(3));
             window.replyBtn.addEventListener('click', () => window.toggleRecording(4));
             window.nextSection4Btn.addEventListener('click', window.initSection4);
 
-            // S4
+            // S4 (Toggle Logic)
             window.answerHBtn.addEventListener('click', () => window.toggleRecording(5));
             window.nextSection5Btn.addEventListener('click', window.initSection5);
             
-            // S5
+            // S5 (Toggle Logic)
             window.startABtn.addEventListener('click', window.playSequentialRegistrationPrompt);
             window.answerABtn.addEventListener('click', () => window.toggleRecording(6));
             window.finalSaveBtn.addEventListener('click', window.saveAllRecordings);
@@ -1144,7 +1115,7 @@ color: white;">
             // 4. Initialize Test Flow
             prepareTurnFiles(); 
             window.recordBtn.disabled = false;
-            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`;
+            window.s1Status.textContent = `🎤 พร้อมบันทึกบทพูดเปิดตัว (เทิร์นที่ 1/${maxTurns})`; // FIX: ใช้ s1Status
         }
 
         document.addEventListener('DOMContentLoaded', initializeUserAndElements);
