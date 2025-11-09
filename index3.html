@@ -1,3 +1,173 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจำลองการโต้ตอบด้วยไฟล์เสียง (S4 & S5)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 20px;
+        }
+        .section-header {
+            background-color: #eaf6ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #fff0d9;
+            color: #ff8c00;
+            font-weight: bold;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #answerHBtn, #answerABtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #nextSection5Btn {
+            background-color: #007bff;
+            color: white;
+        }
+        #startABtn {
+            background-color: #6c757d;
+            color: white;
+        }
+        #finalSaveBtn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .audio-controls {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        /* CSS สำหรับ Loading Overlay และ Certificate (NEW) */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); color: white; display: none; 
+            justify-content: center; align-items: center; flex-direction: column; z-index: 1000;
+            font-size: 20px;
+        }
+        #certificate {
+            border: 5px solid #333; padding: 40px; width: 90%; max-width: 600px;
+            margin: 40px auto; text-align: center; background-color: white; color: #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); display: none; position: fixed;
+            top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001;
+        }
+        #certificate h1 { color: #28a745; border-bottom: 3px double #28a745; }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h5 id="loadingText" class="mt-3">กำลังเตรียมการอัปโหลดไฟล์เสียงรวม...</h5>
+</div>
+
+
+<div class="container">
+    <h1>ระบบจำลองการโต้ตอบ: ช่วงที่ 4 และ 5</h1>
+    <p>💡 **คำแนะนำ:** ให้พนักงานกดปุ่ม **'บันทึกคำถาม'** แล้วกด **'หยุดบันทึก'** เพื่อจำลองการจบประโยคของพนักงาน ระบบจะเล่นไฟล์เสียงลูกค้าและเปิดปุ่มให้บันทึกคำถามถัดไป</p>
+    
+    <button id="startAppBtn" style="background-color: #007bff; color: white;">เริ่มการทำงาน (ไปยังช่วงที่ 4)</button>
+
+    <div id="section3Div" style="display: none;">
+        <h2 class="section-header">✅ ช่วงที่ 3: จบแล้ว</h2>
+        <p>พร้อมเข้าสู่ช่วงที่ 4...</p>
+        <button id="nextSection4Btn" style="background-color: #ffc107; color: black;" disabled>เริ่มช่วงที่ 4</button>
+    </div>
+
+    <hr>
+    
+    <div id="section4Div" style="display: none;">
+        <h2 class="section-header">ช่วงที่ 4: คำถามสุขภาพ (Health Check)</h2>
+        
+        <p><strong>คำถามปัจจุบัน:</strong> <span id="hQName">คำถามที่ 1/5: [โหลดสถานะ]</span></p>
+        
+        <button id="answerHBtn" data-section="section4">🎙️ บันทึกคำถามสุขภาพ</button>
+        <button id="stopHBtn" style="background-color: #ff6600; color: white;" disabled>⏹️ หยุดบันทึก</button>
+        
+        <div id="hStatus" class="status">✅ ช่วงที่ 3 เสร็จสิ้น! กรุณาบันทึกคำถามสุขภาพที่ 1: [ชื่อคำถาม]</div>
+        
+        <div class="audio-controls">
+            <p><strong>เสียงลูกค้าที่กำลังเล่น:</strong></p>
+            <audio id="healthAudio" controls></audio>
+        </div>
+        
+        <button id="nextSection5Btn" style="margin-top: 20px;" disabled>▶️ จบบทที่ 4: ไปช่วงที่ 5</button>
+    </div>
+
+    <hr>
+
+    <div id="section5Div" style="display: none;">
+        <h2 class="section-header">ช่วงที่ 5: ลงทะเบียนลูกค้า (ขั้นตอนที่ <span id="aRound">0</span>/<span id="maxASpan">7</span>)</h2>
+        
+        <button id="startABtn" data-section="section5">🔊 เริ่มขั้นตอนการลงทะเบียน</button>
+        <button id="answerABtn" data-section="section5" disabled>🎙️ บันทึกคำถามลงทะเบียน</button>
+        <button id="stopABtn" style="background-color: #ff6600; color: white;" disabled>⏹️ หยุดบันทึก</button>
+
+        <div id="aStatus" class="status">✅ ช่วงที่ 4 เสร็จสิ้น! กด 'เริ่มขั้นตอนการลงทะเบียน' เพื่อเริ่มช่วงที่ 5 (7 ขั้นตอน)</div>
+        
+        <div class="audio-controls">
+            <p><strong>เสียงลูกค้าที่กำลังเล่น:</strong></p>
+            <audio id="agreementAudio" controls></audio>
+        </div>
+        
+        <button id="finalSaveBtn" style="margin-top: 20px; background-color: #dc3545;" disabled>💾 บันทึกไฟล์เสียงทั้งหมดและอัปโหลด</button>
+    </div>
+
+</div>
+
+<div id="certificate">
+    <h1>🏆 ใบประกาศนียบัตร 🏆</h1>
+    <p style="font-size: 18px;">ขอมอบใบประกาศนียบัตรฉบับนี้แก่</p>
+    <h2 id="traineeName" style="color: #007bff; font-size: 32px; margin: 20px 0;">[ชื่อพนักงาน]</h2>
+    <p style="font-size: 18px;">เพื่อแสดงว่าได้ผ่านการทดสอบหลักสูตรการขายประกันทางโทรศัพท์</p>
+    <p style="margin-top: 30px;">วันที่ออกใบประกาศ: <span id="issueDate"></span></p>
+    <button onclick="document.getElementById('certificate').style.display='none'">ปิด</button>
+</div>
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     import { v4 as uuidv4 } from 'https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/esm-browser/index.js';
