@@ -94,7 +94,8 @@
             <select id="testType" required>
                 <option value="">-- กรุณาเลือก --</option>
                 <option value="health">Health</option>
-                <option value="life">Saving</option>
+                <option value="life">Saving1</option>
+                <option value="life">Saving2</option>
                 <option value="life">Retire</option>
             </select>
         </div>
@@ -128,11 +129,14 @@
 
         // --- ตรรกะการนำทาง ---
         if (testType === 'health') {
-            // ประกันสุขภาพ -> ไป index1.html
+            // Health -> ไป index1.html
             window.location.href = 'index1.html';
-        } else if (testType === 'life') {
-            // ประกันชีวิต -> ไป index3.html
+        } else if (testType === 'life1') {
+            // Saving1 -> ไป index3.html
             window.location.href = 'index3.html';
+        } else if (testType === 'life2') {
+            // Saving2 -> ไป index4.html
+            window.location.href = 'index4.html';
         }
     });
 </script>
